@@ -60,18 +60,22 @@ function App() {
   
   useEffect(() => {
     const data = [];
-    let currentRR = 8.5;
+    let currentRRB = rollingResistance;
+    let currentRRL = linearComputedRR;
     for(let i=0; i<30; i++) {
-      currentRR += (Math.random() - 0.5) * 3;
-      if (currentRR < 4) currentRR = 4;
-      if (currentRR > 15) currentRR = 15;
+      currentRRB += (Math.random() - 0.5) * 1.5;
+      currentRRL += (Math.random() - 0.5) * 1.5;
+      // Clamp values slightly for visual aesthetics so they don't dip below 1%
+      if (currentRRB < 1.0) currentRRB = 1.0;
+      if (currentRRL < 1.0) currentRRL = 1.0;
       data.push({
         time: `T+${i}s`,
-        rr: parseFloat(currentRR.toFixed(2))
+        rrBoussinesq: parseFloat(currentRRB.toFixed(2)),
+        rrLinear: parseFloat(currentRRL.toFixed(2))
       });
     }
     setTraceData(data);
-  }, []);
+  }, [rollingResistance, linearComputedRR]);
 
   return (
     <div className="layout">
@@ -178,19 +182,23 @@ function App() {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={traceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="colorRR" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="colorRR_B" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8}/>
                       <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorRR_L" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--secondary)" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="var(--secondary)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis dataKey="time" stroke="var(--text-secondary)" fontSize={12} />
-                  <YAxis stroke="var(--text-secondary)" fontSize={12} domain={['dataMin - 2', 'dataMax + 2']} />
+                  <YAxis stroke="var(--text-secondary)" fontSize={12} domain={['dataMin - 1', 'dataMax + 1']} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: 'var(--bg-accent)', borderColor: 'var(--glass-border)', color: 'var(--text-primary)' }}
-                    itemStyle={{ color: 'var(--primary)' }}
                   />
-                  <Area type="monotone" dataKey="rr" stroke="var(--primary)" fillOpacity={1} fill="url(#colorRR)" />
+                  <Area type="monotone" dataKey="rrBoussinesq" name="Boussinesq Model" stroke="var(--primary)" fillOpacity={0.6} fill="url(#colorRR_B)" />
+                  <Area type="monotone" dataKey="rrLinear" name="Linear Model" stroke="var(--secondary)" fillOpacity={0.6} fill="url(#colorRR_L)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
