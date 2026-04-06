@@ -160,8 +160,8 @@ function App() {
     setTraceData(data);
   }, [tireLoad, tireStiffness, groundStiffness]);
 
-  const methodALinearEquation = String.raw`RR\% = 2.0 + \left(\delta_{ground} \times 0.2\right) + \left(\delta_{tire} \times 0.05\right)`;
-  const paperRollingResistanceEquation = String.raw`RR\% = 100\left(\frac{y}{\left(\frac{\phi_{\text{tire}}}{2} - \delta_{\text{tire}}\right)}\right)`;
+  const methodALinearEquation = 'RR\\% = 2.0 + \\left(\\delta_{ground} \\times 0.2\\right) + \\left(\\delta_{tire} \\times 0.05\\right)';
+  const paperRollingResistanceEquation = 'RR\\% = 100\\left(\\frac{y}{\\left(\\frac{\\phi_{\\text{tire}}}{2} - \\delta_{\\text{tire}}\\right)}\\right)';
 
   const methodAEquations = [
     {
