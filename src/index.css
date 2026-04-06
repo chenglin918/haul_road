@@ -216,6 +216,320 @@ header p {
   margin-top: 1rem;
 }
 
+.theory-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.95fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.theory-grid > * {
+  min-width: 0;
+}
+
+.theory-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.equation-showcase {
+  display: grid;
+  gap: 1rem;
+}
+
+.equation-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  padding: 1.1rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+    rgba(15, 23, 42, 0.78);
+}
+
+.equation-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: 14px 0 0 14px;
+  background: var(--primary);
+}
+
+.equation-frame-secondary::before {
+  background: var(--secondary);
+}
+
+.equation-frame-accent::before {
+  background: var(--accent);
+}
+
+.equation-eyebrow {
+  margin-bottom: 0.35rem;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.equation-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.equation-math {
+  margin-top: 0.75rem;
+  overflow-x: auto;
+}
+
+.equation-note {
+  margin-top: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.equation-reference {
+  margin-top: 0.55rem;
+  color: rgba(148, 163, 184, 0.82);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.method-comparison-window {
+  margin-top: 1.5rem;
+  padding: 1.15rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 38%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.74));
+}
+
+.method-comparison-window-full {
+  margin-top: 0;
+}
+
+.method-comparison-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.method-comparison-eyebrow {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.method-comparison-title {
+  margin-top: 0.2rem;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.method-comparison-note {
+  max-width: 26rem;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.theory-methods-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.theory-method-card {
+  min-width: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
+.theory-method-card-primary {
+  box-shadow: inset 0 1px 0 rgba(59, 130, 246, 0.12);
+}
+
+.theory-method-card-secondary {
+  box-shadow: inset 0 1px 0 rgba(16, 185, 129, 0.12);
+}
+
+.equation-math .katex-display,
+.equation-step-body .katex-display,
+.theory-method-card .katex-display {
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.25rem;
+}
+
+.equation-math .katex-display::-webkit-scrollbar,
+.equation-step-body .katex-display::-webkit-scrollbar,
+.theory-method-card .katex-display::-webkit-scrollbar {
+  height: 6px;
+}
+
+.equation-math .katex-display::-webkit-scrollbar-thumb,
+.equation-step-body .katex-display::-webkit-scrollbar-thumb,
+.theory-method-card .katex-display::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+.theory-method-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.theory-method-summary {
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.equation-step-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.equation-step {
+  border-radius: 12px;
+  padding: 0.95rem 1rem;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.equation-step-header {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.equation-step-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: rgba(59, 130, 246, 0.18);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+}
+
+.equation-step-index-secondary {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.equation-step-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.equation-step-note {
+  margin-top: 0.2rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.equation-step-body {
+  margin-top: 0.8rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.46);
+}
+
+.equation-step-result {
+  margin-top: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  color: #bfdbfe;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.parameter-stack {
+  min-width: 0;
+}
+
+.theory-download-button {
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+}
+
+@media (max-width: 1180px) {
+  .theory-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .layout {
+    padding: 1rem;
+  }
+
+  .glass-panel {
+    padding: 1rem;
+  }
+
+  .equation-frame,
+  .equation-step {
+    padding: 0.9rem;
+  }
+
+  .equation-step-header {
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .theory-download-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .method-comparison-header {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .method-comparison-note {
+    max-width: none;
+    text-align: left;
+  }
+
+  .theory-methods-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @keyframes fadeInDown {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
