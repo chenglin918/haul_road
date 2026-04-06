@@ -234,9 +234,15 @@ function App() {
               <div style={{ height: '1px', background: 'var(--glass-border)' }}></div>
               <div>
                 <h4 style={{ color: 'var(--text-primary)', marginBottom: '0.25rem', fontSize: '0.95rem' }}>Effective Tire Stiffness (k_tire)</h4>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '0.75rem' }}>
                   Determined universally when a fully-loaded hauler rests stationary (1g condition). The inflation is mapped specifically such that each tire deforms by precisely <strong>7% diametral strain</strong> in sync with the nominal inflation specifications.
                 </p>
+                <a href="/sample_calculation.pdf" download style={{ textDecoration: 'none' }}>
+                  <button className="primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', padding: '8px 16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid #10b981', boxShadow: 'none' }}>
+                    <Calculator size={16} />
+                    Download Sample Calculation PDF
+                  </button>
+                </a>
               </div>
             </div>
           </div>
