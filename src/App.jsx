@@ -17,31 +17,38 @@ function App() {
   const [tireStiffness, setTireStiffness] = useState(13); // kN/mm
   const [groundStiffness, setGroundStiffness] = useState(4.5); // MPa
 
-  // Derived metrics (simplified Boussinesq model representation for the simulator)
-  const [rollingResistance, setRollingResistance] = useState(0);
-  const [groundDeflection, setGroundDeflection] = useState(0);
-  const [tireDeflection, setTireDeflection] = useState(0);
+  // Derived Advanced Geometric Boussinesq Calculations
+  const phi = 3.84; // Typical tire diameter in meters
+  const R = phi / 2; // Radius = 1.92m
+  
+  // Tire Deflection
+  const deltaTireMeters = (tireLoad / tireStiffness) / 1000; 
+  const tireDeflection = (deltaTireMeters * 1000); // in mm
+  
+  // Footprint Area
+  const footprintArea = 1.35 * deltaTireMeters * phi;
+  const footprintPressure = footprintArea > 0 ? tireLoad / footprintArea : 0; // kPa
+  
+  // Resilient Ground Deflection (Boussinesq rheology abstraction)
+  // kp is in MPa (1 MPa = 1000 kPa). So delta_ground = p / (kp * 1000)
+  const deltaGroundMeters = (footprintPressure / (groundStiffness * 1000));
+  const groundDeflection = (deltaGroundMeters * 1000); // in mm
 
-  useEffect(() => {
-    // Simulator calculation logic inspired by theory:
-    // Tire deflection = Load / Tire Stiffness
-    const deltaTire = tireLoad / tireStiffness;
-    
-    // Ground deflection inversely proportional to ground stiffness
-    // (Scaled for visualization purposes based on characteristic values)
-    const deltaGround = (tireLoad / groundStiffness) * 0.15;
-    
-    // Rolling Resistance is fundamentally derived from y / effective radius
-    // Here we simulate the effect where higher ground deflection drastically increases RR,
-    // while tire deflection has a more complex, but generally increasing effect on footprint arc.
-    // Equivalent grade % roughly maps to these interactions.
-    const rrBase = 2.0; // Base resistance rolling on pure hard surface
-    const computedRR = rrBase + (deltaGround * 0.2) + (deltaTire * 0.05);
-
-    setTireDeflection(deltaTire);
-    setGroundDeflection(deltaGround);
-    setRollingResistance(computedRR);
-  }, [tireLoad, tireStiffness, groundStiffness]);
+  // Geometric Intersection Angles (radians)
+  const valBeta = (R - deltaTireMeters) / R;
+  const beta = Math.acos(Math.max(-1, Math.min(1, valBeta)));
+  
+  const valAlpha = (R - (deltaTireMeters + deltaGroundMeters)) / R;
+  const alphaRadiusCheck = Math.max(-1, Math.min(1, valAlpha));
+  const alpha = Math.acos(alphaRadiusCheck);
+  
+  const psi = Math.max(0, alpha - beta);
+  const l_arc = 2 * R * Math.sin(psi / 2);
+  const L_chord = 2 * R * Math.sin(beta);
+  
+  const dynamicFactor = L_chord > 0 ? (l_arc / L_chord) - 1.0 : 0;
+  // Convert standard dynamic proportion to % and add base RR (e.g. 2.0%)
+  const rollingResistance = 2.0 + (dynamicFactor * 100);
 
   // Generates dummy GPS trace data for the RR distribution chart
   const [traceData, setTraceData] = useState([]);
@@ -201,14 +208,35 @@ function App() {
               <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>Key Geometric RR Equation</h3>
             </div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem', lineHeight: '1.5' }}>
-              The classical definition of rolling resistance involves the balance of torque from a static moment frame. Expanding into a dynamic field model, rolling resistance coefficient (c_RR) equates to the resistive grade:
+              Expanding into a dynamic Boussinesq rheological model, the resistive rolling resistance coefficient equates to the geometric ratio between the quadratic chord dirt interaction wave ($l_{{arc}}$) and the flat footprint length ($L$).
             </p>
             <div style={{ background: 'var(--bg-accent)', padding: '1rem', borderRadius: '8px', textAlign: 'center', fontFamily: 'monospace', fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>
-              RR% = [ y / ( ɸ/2 - δ_tire ) ] × 100
+              RR% = [ l_arc / L_chord ] - 1.0 (baseline)
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-              Where <strong>y</strong> is the offset of the ground reaction geometric centroid, <strong>ɸ</strong> is tire diameter, and <strong>δ_tire</strong> is tire deflection.
-            </p>
+            
+            {/* Dynamic Interactive Sample Calculation injected into HTML UI */}
+            <div style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid var(--glass-border)', padding: '1.5rem', borderRadius: '8px', fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--text-primary)', marginTop: '1.5rem' }}>
+              <strong style={{color:'var(--accent)', fontSize:'1rem', display:'block', marginBottom:'0.75rem'}}>Live Boussinesq Protocol</strong>
+              
+              <span style={{color:'var(--text-secondary)'}}>// 1. Deflection & Footprint</span><br/>
+              δ_tire = F_i / k_tire = {tireLoad} / {tireStiffness} = <strong style={{color:'var(--text-primary)'}}>{tireDeflection.toFixed(1)} mm</strong><br/>
+              Area_A = 1.35 × {deltaTireMeters.toFixed(3)}m × {phi}m = {footprintArea.toFixed(3)} m²<br/>
+              <br/>
+              <span style={{color:'var(--text-secondary)'}}>// 2. Rheological Stress Bulb</span><br/>
+              p_contact = {tireLoad} / {footprintArea.toFixed(3)} = {footprintPressure.toFixed(0)} kPa<br/>
+              δ_ground = p / k_p = {footprintPressure.toFixed(0)} / {(groundStiffness*1000).toFixed(0)} = <strong style={{color:'var(--text-primary)'}}>{groundDeflection.toFixed(1)} mm</strong><br/>
+              <br/>
+              <span style={{color:'var(--text-secondary)'}}>// 3. Quadratic Chord Angles</span><br/>
+              β (Base Angle) = {((beta*180)/Math.PI).toFixed(2)}°<br/>
+              α (Rut Intersect) = {((alpha*180)/Math.PI).toFixed(2)}°<br/>
+              ψ (Ground Slope) = α - β = <strong style={{color:'var(--secondary)'}}>{((psi*180)/Math.PI).toFixed(2)}°</strong><br/>
+              l_arc (Dirt Wave) = {l_arc.toFixed(3)} m<br/>
+              L_chord (Footprint) = {L_chord.toFixed(3)} m<br/>
+              <br/>
+              <span style={{color:'var(--text-secondary)'}}>// 4. Coefficient mapping</span><br/>
+              RR% = Base(2.0%) + [ ( {l_arc.toFixed(3)} / {L_chord.toFixed(3)} ) - 1.0 ] × 100<br/>
+              <strong style={{fontSize:'1.1rem', color:'var(--primary)', marginTop:'0.5rem', display:'block'}}>RR = {rollingResistance.toFixed(2)}%</strong>
+            </div>
           </div>
 
           {/* KPI Methods */}
@@ -237,12 +265,6 @@ function App() {
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '0.75rem' }}>
                   Determined universally when a fully-loaded hauler rests stationary (1g condition). The inflation is mapped specifically such that each tire deforms by precisely <strong>7% diametral strain</strong> in sync with the nominal inflation specifications.
                 </p>
-                <a href="/sample_calculation.pdf" download style={{ textDecoration: 'none' }}>
-                  <button className="primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', padding: '8px 16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid #10b981', boxShadow: 'none' }}>
-                    <Calculator size={16} />
-                    Download Sample Calculation PDF
-                  </button>
-                </a>
               </div>
             </div>
           </div>
