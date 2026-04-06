@@ -25,6 +25,11 @@ function App() {
   const deltaTireMeters = (tireLoad / tireStiffness) / 1000; 
   const tireDeflection = (deltaTireMeters * 1000); // in mm
   
+  // --- METHOD A: Equivalent Linear Interaction Model ---
+  const linearGroundDeflectionMm = (tireLoad / groundStiffness) * 0.15;
+  const linearComputedRR = 2.0 + (linearGroundDeflectionMm * 0.2) + (tireDeflection * 0.05);
+
+  // --- METHOD B: Complex Boussinesq Rheological Stress Bulb ---
   // Footprint Area
   const footprintArea = 1.35 * deltaTireMeters * phi;
   const footprintPressure = footprintArea > 0 ? tireLoad / footprintArea : 0; // kPa
@@ -215,27 +220,40 @@ function App() {
             </div>
             
             {/* Dynamic Interactive Sample Calculation injected into HTML UI */}
-            <div style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid var(--glass-border)', padding: '1.5rem', borderRadius: '8px', fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--text-primary)', marginTop: '1.5rem' }}>
-              <strong style={{color:'var(--accent)', fontSize:'1rem', display:'block', marginBottom:'0.75rem'}}>Live Boussinesq Protocol</strong>
-              
-              <span style={{color:'var(--text-secondary)'}}>// 1. Deflection & Footprint</span><br/>
-              δ_tire = F_i / k_tire = {tireLoad} / {tireStiffness} = <strong style={{color:'var(--text-primary)'}}>{tireDeflection.toFixed(1)} mm</strong><br/>
-              Area_A = 1.35 × {deltaTireMeters.toFixed(3)}m × {phi}m = {footprintArea.toFixed(3)} m²<br/>
-              <br/>
-              <span style={{color:'var(--text-secondary)'}}>// 2. Rheological Stress Bulb</span><br/>
-              p_contact = {tireLoad} / {footprintArea.toFixed(3)} = {footprintPressure.toFixed(0)} kPa<br/>
-              δ_ground = p / k_p = {footprintPressure.toFixed(0)} / {(groundStiffness*1000).toFixed(0)} = <strong style={{color:'var(--text-primary)'}}>{groundDeflection.toFixed(1)} mm</strong><br/>
-              <br/>
-              <span style={{color:'var(--text-secondary)'}}>// 3. Quadratic Chord Angles</span><br/>
-              β (Base Angle) = {((beta*180)/Math.PI).toFixed(2)}°<br/>
-              α (Rut Intersect) = {((alpha*180)/Math.PI).toFixed(2)}°<br/>
-              ψ (Ground Slope) = α - β = <strong style={{color:'var(--secondary)'}}>{((psi*180)/Math.PI).toFixed(2)}°</strong><br/>
-              l_arc (Dirt Wave) = {l_arc.toFixed(3)} m<br/>
-              L_chord (Footprint) = {L_chord.toFixed(3)} m<br/>
-              <br/>
-              <span style={{color:'var(--text-secondary)'}}>// 4. Coefficient mapping</span><br/>
-              RR% = Base(2.0%) + [ ( {l_arc.toFixed(3)} / {L_chord.toFixed(3)} ) - 1.0 ] × 100<br/>
-              <strong style={{fontSize:'1.1rem', color:'var(--primary)', marginTop:'0.5rem', display:'block'}}>RR = {rollingResistance.toFixed(2)}%</strong>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.5rem' }}>
+              {/* Method A */}
+              <div style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid var(--glass-border)', padding: '1rem', borderRadius: '8px', fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-primary)' }}>
+                <strong style={{color:'var(--accent)', fontSize:'0.9rem', display:'block', marginBottom:'0.5rem'}}>Method A: Equivalent Linear Model</strong>
+                
+                <span style={{color:'var(--text-secondary)'}}>// 1. Deflection & Scale</span><br/>
+                δ_tire = {tireDeflection.toFixed(1)} mm<br/>
+                δ_ground = (F_i / k_p) × 0.15<br/>
+                δ_ground = ({tireLoad} / {groundStiffness}) × 0.15 = <strong style={{color:'var(--text-primary)'}}>{linearGroundDeflectionMm.toFixed(1)} mm</strong><br/>
+                <br/>
+                <span style={{color:'var(--text-secondary)'}}>// 2. Rolling Resistance Baseline map</span><br/>
+                RR% = Base(2.0) + (δ_ground×0.2) + (δ_tire×0.05)<br/>
+                RR% = 2.0 + {(linearGroundDeflectionMm*0.2).toFixed(2)} + {(tireDeflection*0.05).toFixed(2)}<br/>
+                <strong style={{fontSize:'1rem', color:'var(--primary)', marginTop:'0.5rem', display:'block'}}>RR_linear = {linearComputedRR.toFixed(2)}%</strong>
+              </div>
+
+              {/* Method B */}
+              <div style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid var(--glass-border)', padding: '1rem', borderRadius: '8px', fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-primary)' }}>
+                <strong style={{color:'var(--accent)', fontSize:'0.9rem', display:'block', marginBottom:'0.5rem'}}>Method B: Complex Boussinesq Model</strong>
+                
+                <span style={{color:'var(--text-secondary)'}}>// 1. Stress Bulb Rutting</span><br/>
+                p_contact = {tireLoad} / {footprintArea.toFixed(3)} = {footprintPressure.toFixed(0)} kPa<br/>
+                δ_ground = p / k_p = {footprintPressure.toFixed(0)} / {(groundStiffness*1000).toFixed(0)} = <strong style={{color:'var(--text-primary)'}}>{groundDeflection.toFixed(1)} mm</strong><br/>
+                <br/>
+                <span style={{color:'var(--text-secondary)'}}>// 2. Quadratic Chord Angles</span><br/>
+                β = {((beta*180)/Math.PI).toFixed(2)}° | α = {((alpha*180)/Math.PI).toFixed(2)}°<br/>
+                ψ (Ground Slope) = α - β = <strong style={{color:'var(--secondary)'}}>{((psi*180)/Math.PI).toFixed(2)}°</strong><br/>
+                l_arc (Dirt Wave) = {l_arc.toFixed(3)} m<br/>
+                L_chord (Footprint) = {L_chord.toFixed(3)} m<br/>
+                <br/>
+                <span style={{color:'var(--text-secondary)'}}>// 3. Coefficient mapping</span><br/>
+                RR% = [ ( {l_arc.toFixed(3)} / {L_chord.toFixed(3)} ) - 1.0 ] × 100 + 2.0<br/>
+                <strong style={{fontSize:'1rem', color:'var(--primary)', marginTop:'0.5rem', display:'block'}}>RR_boussinesq = {rollingResistance.toFixed(2)}%</strong>
+              </div>
             </div>
           </div>
 
@@ -265,6 +283,12 @@ function App() {
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '0.75rem' }}>
                   Determined universally when a fully-loaded hauler rests stationary (1g condition). The inflation is mapped specifically such that each tire deforms by precisely <strong>7% diametral strain</strong> in sync with the nominal inflation specifications.
                 </p>
+                <a href="/sample_calculation.pdf" download style={{ textDecoration: 'none' }}>
+                  <button className="primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', padding: '8px 16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid #10b981', boxShadow: 'none' }}>
+                    <Calculator size={16} />
+                    Download Sample Calculation PDF
+                  </button>
+                </a>
               </div>
             </div>
           </div>
