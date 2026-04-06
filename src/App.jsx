@@ -208,7 +208,7 @@ function App() {
               <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>Key Geometric RR Equation</h3>
             </div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem', lineHeight: '1.5' }}>
-              Expanding into a dynamic Boussinesq rheological model, the resistive rolling resistance coefficient equates to the geometric ratio between the quadratic chord dirt interaction wave ($l_{{arc}}$) and the flat footprint length ($L$).
+              Expanding into a dynamic Boussinesq rheological model, the resistive rolling resistance coefficient equates to the geometric ratio between the quadratic chord dirt interaction wave ($l_arc$) and the flat footprint length ($L$).
             </p>
             <div style={{ background: 'var(--bg-accent)', padding: '1rem', borderRadius: '8px', textAlign: 'center', fontFamily: 'monospace', fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>
               RR% = [ l_arc / L_chord ] - 1.0 (baseline)
