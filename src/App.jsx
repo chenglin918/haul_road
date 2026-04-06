@@ -162,26 +162,27 @@ function App() {
 
   const methodALinearEquation = 'RR\\% = 2.0 + \\left(\\delta_{ground} \\times 0.2\\right) + \\left(\\delta_{tire} \\times 0.05\\right)';
   const paperRollingResistanceEquation = 'RR\\% = 100\\left(\\frac{y}{\\left(\\frac{\\phi_{\\text{tire}}}{2} - \\delta_{\\text{tire}}\\right)}\\right)';
+  const latexLines = (...lines) => lines.join('\n');
 
   const methodAEquations = [
     {
       index: '01',
       label: 'Tire Deflection',
-      math: String.raw`\delta_{tire} = \frac{F_i}{k_{tire}} = \frac{${tireLoad}}{${tireStiffness}} = ${tireDeflection.toFixed(1)}\ \text{mm}`,
+      math: `\\delta_{tire} = \\frac{F_i}{k_{tire}} = \\frac{${tireLoad}}{${tireStiffness}} = ${tireDeflection.toFixed(1)}\\ \\text{mm}`,
       note: 'Elastic tire compression from the wheel load and mapped tire stiffness.',
       result: `Compression = ${tireDeflection.toFixed(1)} mm`,
     },
     {
       index: '02',
       label: 'Equivalent Ground Deflection',
-      math: String.raw`\delta_{ground} = \left(\frac{F_i}{k_p}\right)\times 0.15 = \left(\frac{${tireLoad}}{${groundStiffness}}\right)\times 0.15 = ${linearGroundDeflectionMm.toFixed(1)}\ \text{mm}`,
+      math: `\\delta_{ground} = \\left(\\frac{F_i}{k_p}\\right)\\times 0.15 = \\left(\\frac{${tireLoad}}{${groundStiffness}}\\right)\\times 0.15 = ${linearGroundDeflectionMm.toFixed(1)}\\ \\text{mm}`,
       note: 'A fast proportional map used for responsive field visualization.',
       result: `Ground sink = ${linearGroundDeflectionMm.toFixed(1)} mm`,
     },
     {
       index: '03',
       label: 'Linear Rolling Resistance',
-      math: String.raw`RR\% = 2.0 + \left(${linearGroundDeflectionMm.toFixed(1)} \times 0.2\right) + \left(${tireDeflection.toFixed(1)} \times 0.05\right) = ${linearComputedRR.toFixed(2)}\%`,
+      math: `RR\\% = 2.0 + \\left(${linearGroundDeflectionMm.toFixed(1)} \\times 0.2\\right) + \\left(${tireDeflection.toFixed(1)} \\times 0.05\\right) = ${linearComputedRR.toFixed(2)}\\%`,
       note: 'Baseline hard-surface resistance plus ground and tire deformation penalties.',
       result: `RR_linear = ${linearComputedRR.toFixed(2)}%`,
     },
@@ -191,51 +192,49 @@ function App() {
     {
       index: '01',
       label: 'Footprint Geometry',
-      math: String.raw`A = 1.35\,\delta_{tire}\phi = ${footprintArea.toFixed(3)}\ \text{m}^2,\quad L = 2\sqrt{\phi\,\delta_{tire} - \delta_{tire}^2} = ${footprintLength.toFixed(3)}\ \text{m}`,
+      math: `A = 1.35\\,\\delta_{tire}\\phi = ${footprintArea.toFixed(3)}\\ \\text{m}^2,\\quad L = 2\\sqrt{\\phi\\,\\delta_{tire} - \\delta_{tire}^2} = ${footprintLength.toFixed(3)}\\ \\text{m}`,
       note: 'The footprint area comes from Eq. (5). The base contact length L is derived from the circular chord geometry of the deflected tire.',
       result: `A = ${footprintArea.toFixed(3)} m², L = ${footprintLength.toFixed(3)} m`,
     },
     {
       index: '02',
       label: 'Effective Tire Width and Ground Deformation',
-      math: String.raw`w = \frac{A}{L} = \frac{${footprintArea.toFixed(3)}}{${footprintLength.toFixed(3)}} = ${tireWidth.toFixed(3)}\ \text{m},\quad \delta_{ground} = \frac{F_i}{A\,k_p} = ${deltaGroundMeters.toFixed(3)}\ \text{m}`,
+      math: `w = \\frac{A}{L} = \\frac{${footprintArea.toFixed(3)}}{${footprintLength.toFixed(3)}} = ${tireWidth.toFixed(3)}\\ \\text{m},\\quad \\delta_{ground} = \\frac{F_i}{A\\,k_p} = ${deltaGroundMeters.toFixed(3)}\\ \\text{m}`,
       note: 'Once L is known, the effective width follows directly from A = Lw. Eq. (6) then gives the resilient ground deformation.',
       result: `w = ${tireWidth.toFixed(3)} m, δ_ground = ${groundDeflection.toFixed(1)} mm`,
     },
     {
       index: '03',
       label: 'Lead Contact Geometry',
-      math: String.raw`\begin{aligned}
-        \omega &= ${((omega * 180) / Math.PI).toFixed(2)}^\circ,\quad
-        \alpha = ${((alpha * 180) / Math.PI).toFixed(2)}^\circ,\quad
-        \beta = ${((beta * 180) / Math.PI).toFixed(2)}^\circ \\
-        l_{arc} &= \frac{\phi}{2}\left(\sqrt{\left(\frac{L}{\phi}\right)^2 + \frac{4\delta_{ground}}{\phi}} - \frac{L}{\phi}\right) \\
-        &= \frac{${phi.toFixed(2)}}{2}\left(\sqrt{\left(\frac{${footprintLength.toFixed(3)}}{${phi.toFixed(2)}}\right)^2 + \frac{4(${deltaGroundMeters.toFixed(3)})}{${phi.toFixed(2)}}} - \frac{${footprintLength.toFixed(3)}}{${phi.toFixed(2)}}\right) \\
-        &= ${l_arc.toFixed(3)}\ \text{m}
-      \end{aligned}`,
+      math: latexLines(
+        '\\begin{aligned}',
+        `\\omega &= ${((omega * 180) / Math.PI).toFixed(2)}^\\circ,\\quad \\alpha = ${((alpha * 180) / Math.PI).toFixed(2)}^\\circ,\\quad \\beta = ${((beta * 180) / Math.PI).toFixed(2)}^\\circ \\\\`,
+        'l_{arc} &= \\frac{\\phi}{2}\\left(\\sqrt{\\left(\\frac{L}{\\phi}\\right)^2 + \\frac{4\\delta_{ground}}{\\phi}} - \\frac{L}{\\phi}\\right) \\\\',
+        `&= \\frac{${phi.toFixed(2)}}{2}\\left(\\sqrt{\\left(\\frac{${footprintLength.toFixed(3)}}{${phi.toFixed(2)}}\\right)^2 + \\frac{4(${deltaGroundMeters.toFixed(3)})}{${phi.toFixed(2)}}} - \\frac{${footprintLength.toFixed(3)}}{${phi.toFixed(2)}}\\right) \\\\`,
+        `&= ${l_arc.toFixed(3)}\\ \\text{m}`,
+        '\\end{aligned}',
+      ),
       note: 'Eqs. (8), (9), (10), and the quadratic root in Eq. (11) define the leading-edge geometry of the tire-ground contact.',
       result: `ω = ${((omega * 180) / Math.PI).toFixed(2)}°, l_arc = ${l_arc.toFixed(3)} m`,
     },
     {
       index: '04',
       label: 'Ground Reaction Offset',
-      math: String.raw`\begin{aligned}
-        l_{arc}\cos\omega &= ${l_arc.toFixed(3)}\cos(${((omega * 180) / Math.PI).toFixed(2)}^\circ) = ${projectedLead.toFixed(3)}\ \text{m} \\
-        y &= \left(\frac{1}{2}L + l_{arc}\cos\psi\right)
-        - \frac{\frac{2}{3}\left(l_{arc}\cos\psi\right)^2\delta_{ground} + \frac{\pi}{8}\left(L + l_{arc}\cos\psi\right)^3}
-        {\left(l_{arc}\cos\psi\right)\delta_{ground} + \frac{\pi}{4}\left(L + l_{arc}\cos\psi\right)^2} \\
-        &= \left(\frac{1}{2}(${footprintLength.toFixed(3)}) + ${projectedLead.toFixed(3)}\right)
-        - \frac{\frac{2}{3}(${projectedLead.toFixed(3)})^2(${deltaGroundMeters.toFixed(3)}) + \frac{\pi}{8}(${(footprintLength + projectedLead).toFixed(3)})^3}
-        {(${projectedLead.toFixed(3)})(${deltaGroundMeters.toFixed(3)}) + \frac{\pi}{4}(${(footprintLength + projectedLead).toFixed(3)})^2} \\
-        &= ${reactionOffset.toFixed(3)}\ \text{m}
-      \end{aligned}`,
+      math: latexLines(
+        '\\begin{aligned}',
+        `l_{arc}\\cos\\omega &= ${l_arc.toFixed(3)}\\cos(${((omega * 180) / Math.PI).toFixed(2)}^\\circ) = ${projectedLead.toFixed(3)}\\ \\text{m} \\\\`,
+        'y &= \\left(\\frac{1}{2}L + l_{arc}\\cos\\psi\\right) - \\frac{\\frac{2}{3}\\left(l_{arc}\\cos\\psi\\right)^2\\delta_{ground} + \\frac{\\pi}{8}\\left(L + l_{arc}\\cos\\psi\\right)^3}{\\left(l_{arc}\\cos\\psi\\right)\\delta_{ground} + \\frac{\\pi}{4}\\left(L + l_{arc}\\cos\\psi\\right)^2} \\\\',
+        `&= \\left(\\frac{1}{2}(${footprintLength.toFixed(3)}) + ${projectedLead.toFixed(3)}\\right) - \\frac{\\frac{2}{3}(${projectedLead.toFixed(3)})^2(${deltaGroundMeters.toFixed(3)}) + \\frac{\\pi}{8}(${(footprintLength + projectedLead).toFixed(3)})^3}{(${projectedLead.toFixed(3)})(${deltaGroundMeters.toFixed(3)}) + \\frac{\\pi}{4}(${(footprintLength + projectedLead).toFixed(3)})^2} \\\\`,
+        `&= ${reactionOffset.toFixed(3)}\\ \\text{m}`,
+        '\\end{aligned}',
+      ),
       note: 'Eq. (3) treats the pressure bulb as a triangularly ended hemispherical prism and computes the reaction offset y.',
       result: `y = ${reactionOffset.toFixed(3)} m`,
     },
     {
       index: '05',
       label: 'Rolling Resistance',
-      math: String.raw`RR\% = 100\left(\frac{${reactionOffset.toFixed(3)}}{\left(\frac{${phi.toFixed(2)}}{2} - ${deltaTireMeters.toFixed(3)}\right)}\right) = ${rollingResistance.toFixed(2)}\%`,
+      math: `RR\\% = 100\\left(\\frac{${reactionOffset.toFixed(3)}}{\\left(\\frac{${phi.toFixed(2)}}{2} - ${deltaTireMeters.toFixed(3)}\\right)}\\right) = ${rollingResistance.toFixed(2)}\\%`,
       note: 'Eq. (1) converts the geometric offset into equivalent slope percent, which is how the paper reports rolling resistance.',
       result: `RR_paper = ${rollingResistance.toFixed(2)}%`,
     },
