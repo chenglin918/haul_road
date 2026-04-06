@@ -1,0 +1,291 @@
+import React, { useState, useEffect } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, Cell } from 'recharts';
+import { Settings, RefreshCw, BarChart3, Truck, Layers, Activity, BookOpen, Microscope, Calculator, Download } from 'lucide-react';
+import './index.css';
+
+// Material Cap Rolling Resistance Data (from paper scale tests)
+const materialsData = [
+  { name: 'Oil Sand Base', rr: 11, color: '#f59e0b' },
+  { name: 'Sand Cap', rr: 18, color: '#ef4444' },
+  { name: 'Pit Run Cap', rr: 9, color: '#3b82f6' },
+  { name: 'Limestone Cap', rr: 6, color: '#10b981' },
+];
+
+function App() {
+  // Simulator State
+  const [tireLoad, setTireLoad] = useState(900); // kN
+  const [tireStiffness, setTireStiffness] = useState(13); // kN/mm
+  const [groundStiffness, setGroundStiffness] = useState(4.5); // MPa
+
+  // Derived metrics (simplified Boussinesq model representation for the simulator)
+  const [rollingResistance, setRollingResistance] = useState(0);
+  const [groundDeflection, setGroundDeflection] = useState(0);
+  const [tireDeflection, setTireDeflection] = useState(0);
+
+  useEffect(() => {
+    // Simulator calculation logic inspired by theory:
+    // Tire deflection = Load / Tire Stiffness
+    const deltaTire = tireLoad / tireStiffness;
+    
+    // Ground deflection inversely proportional to ground stiffness
+    // (Scaled for visualization purposes based on characteristic values)
+    const deltaGround = (tireLoad / groundStiffness) * 0.15;
+    
+    // Rolling Resistance is fundamentally derived from y / effective radius
+    // Here we simulate the effect where higher ground deflection drastically increases RR,
+    // while tire deflection has a more complex, but generally increasing effect on footprint arc.
+    // Equivalent grade % roughly maps to these interactions.
+    const rrBase = 2.0; // Base resistance rolling on pure hard surface
+    const computedRR = rrBase + (deltaGround * 0.2) + (deltaTire * 0.05);
+
+    setTireDeflection(deltaTire);
+    setGroundDeflection(deltaGround);
+    setRollingResistance(computedRR);
+  }, [tireLoad, tireStiffness, groundStiffness]);
+
+  // Generates dummy GPS trace data for the RR distribution chart
+  const [traceData, setTraceData] = useState([]);
+  
+  useEffect(() => {
+    const data = [];
+    let currentRR = 8.5;
+    for(let i=0; i<30; i++) {
+      currentRR += (Math.random() - 0.5) * 3;
+      if (currentRR < 4) currentRR = 4;
+      if (currentRR > 15) currentRR = 15;
+      data.push({
+        time: `T+${i}s`,
+        rr: parseFloat(currentRR.toFixed(2))
+      });
+    }
+    setTraceData(data);
+  }, []);
+
+  return (
+    <div className="layout">
+      <header>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <Truck size={48} color="var(--primary)" />
+        </div>
+        <h1>Haul Road <span className="text-gradient">Performance Simulator</span></h1>
+        <p>
+          Operational Methodologies for Rolling Resistance Evaluation.
+          Interactive tooling estimating equivalent slope grade (%) based on hauler suspension, tire footprint, and resilient pressure stiffness.
+        </p>
+      </header>
+
+      <div className="grid">
+        {/* Left Column: Interactive Simulator */}
+        <div className="glass-panel fade-in-up delay-1 calc-section">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <Settings color="var(--primary)" />
+            <h2>Hauler & Surface Parameters</h2>
+          </div>
+
+          <div className="slider-group">
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <label>Tire Load (F) - kN</label>
+              <span className="value-display">{tireLoad} kN</span>
+            </div>
+            <input 
+              type="range" 
+              min="500" 
+              max="1500" 
+              value={tireLoad}
+              onChange={(e) => setTireLoad(parseInt(e.target.value))}
+            />
+          </div>
+
+          <div className="slider-group">
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <label>Tire Effective Stiffness (k_tire) - kN/mm</label>
+              <span className="value-display">{tireStiffness} kN/mm</span>
+            </div>
+            <input 
+              type="range" 
+              min="5" 
+              max="25" 
+              step="0.5"
+              value={tireStiffness}
+              onChange={(e) => setTireStiffness(parseFloat(e.target.value))}
+            />
+          </div>
+
+          <div className="slider-group">
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <label>Resilient Ground Stiffness (k_p) - MPa</label>
+              <span className="value-display">{groundStiffness} MPa</span>
+            </div>
+            <input 
+              type="range" 
+              min="1" 
+              max="20" 
+              step="0.5"
+              value={groundStiffness}
+              onChange={(e) => setGroundStiffness(parseFloat(e.target.value))}
+            />
+          </div>
+
+          <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+              <div>
+                <div className="metric-label">Ground Rut (δ_ground)</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
+                  {groundDeflection.toFixed(1)} mm
+                </div>
+              </div>
+              <div style={{ width: '1px', height: '40px', background: 'var(--glass-border)' }}></div>
+              <div>
+                <div className="metric-label">Tire Flex (δ_tire)</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
+                  {tireDeflection.toFixed(1)} mm
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Output Metrics & Real Time Chart */}
+        <div className="glass-panel fade-in-up delay-2" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Activity color="var(--accent)" />
+            <h2>Simulated Rolling Resistance</h2>
+          </div>
+          
+          <div className="metric-big">
+            {rollingResistance.toFixed(2)}%
+          </div>
+          <div className="metric-label">Equivalent Slope Grade</div>
+
+          <div style={{ marginTop: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              <RefreshCw size={16} color="var(--text-secondary)"/>
+              <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>Live Vehicle GPS Simulation</h3>
+            </div>
+            <div className="chart-container" style={{ height: '220px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={traceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorRR" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="time" stroke="var(--text-secondary)" fontSize={12} />
+                  <YAxis stroke="var(--text-secondary)" fontSize={12} domain={['dataMin - 2', 'dataMax + 2']} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'var(--bg-accent)', borderColor: 'var(--glass-border)', color: 'var(--text-primary)' }}
+                    itemStyle={{ color: 'var(--primary)' }}
+                  />
+                  <Area type="monotone" dataKey="rr" stroke="var(--primary)" fillOpacity={1} fill="url(#colorRR)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Theoretical Framework Panel */}
+      <div className="glass-panel fade-in-up delay-3" style={{ marginTop: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+          <BookOpen color="var(--primary)" />
+          <h2>Theoretical Framework</h2>
+        </div>
+        
+        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          {/* Equation Box */}
+          <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              <Calculator size={20} color="var(--accent)" />
+              <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>Key Geometric RR Equation</h3>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem', lineHeight: '1.5' }}>
+              The classical definition of rolling resistance involves the balance of torque from a static moment frame. Expanding into a dynamic field model, rolling resistance coefficient (c_RR) equates to the resistive grade:
+            </p>
+            <div style={{ background: 'var(--bg-accent)', padding: '1rem', borderRadius: '8px', textAlign: 'center', fontFamily: 'monospace', fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>
+              RR% = [ y / ( ɸ/2 - δ_tire ) ] × 100
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+              Where <strong>y</strong> is the offset of the ground reaction geometric centroid, <strong>ɸ</strong> is tire diameter, and <strong>δ_tire</strong> is tire deflection.
+            </p>
+          </div>
+
+          {/* KPI Methods */}
+          <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              <Microscope size={20} color="var(--secondary)" />
+              <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>Parameter Determination</h3>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <h4 style={{ color: 'var(--text-primary)', marginBottom: '0.25rem', fontSize: '0.95rem' }}>Resilient Ground Stiffness (k_p)</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.4', marginBottom: '0.75rem' }}>
+                  Determined through an in-field <strong>Cyclic Plate Load Test</strong>. A plate is cyclically loaded directly onto the surface commensurate to a nominal 1g truck pressure until a resilient, constant cyclic deformation establishes an elastic equilibrium.
+                </p>
+                <a href="/kp_determination_briefing.pdf" download style={{ textDecoration: 'none' }}>
+                  <button className="primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', padding: '8px 16px', background: 'rgba(59, 130, 246, 0.2)', color: 'var(--primary)', border: '1px solid var(--primary)', boxShadow: 'none' }}>
+                    <Download size={16} />
+                    Download PDF Protocol
+                  </button>
+                </a>
+              </div>
+              <div style={{ height: '1px', background: 'var(--glass-border)' }}></div>
+              <div>
+                <h4 style={{ color: 'var(--text-primary)', marginBottom: '0.25rem', fontSize: '0.95rem' }}>Effective Tire Stiffness (k_tire)</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                  Determined universally when a fully-loaded hauler rests stationary (1g condition). The inflation is mapped specifically such that each tire deforms by precisely <strong>7% diametral strain</strong> in sync with the nominal inflation specifications.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="glass-panel fade-in-up delay-3" style={{ marginTop: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+          <Layers color="var(--secondary)" />
+          <h2>Wearing Course Material Comparison</h2>
+        </div>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '800px' }}>
+          Scale rolling resistance laboratory testing reveals that surface capping dramatically impacts haul truck rolling resistance. Sand caps tend to deteriorate and blend, worsening resistance, whereas crushed limestone optimally distributes load.
+        </p>
+        
+        <div className="chart-container">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={materialsData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={true} stroke="rgba(255,255,255,0.05)" />
+              <XAxis type="number" stroke="var(--text-secondary)" domain={[0, 20]} />
+              <YAxis dataKey="name" type="category" stroke="var(--text-primary)" fontSize={13} width={120} />
+              <Tooltip 
+                cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                contentStyle={{ backgroundColor: 'var(--bg-accent)', borderColor: 'var(--glass-border)', color: 'var(--text-primary)', borderRadius: '8px' }}
+              />
+              <Bar dataKey="rr" name="Rolling Resistance (%)" radius={[0, 8, 8, 0]} barSize={40}>
+                {materialsData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <footer className="footer">
+        <p>Built dynamically with Antigravity AI.</p>
+        <div style={{ fontSize: '0.85rem', marginTop: '1.5rem', opacity: 0.9, background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--glass-border)', maxWidth: '600px', margin: '1.5rem auto 0 auto' }}>
+          <p style={{ fontWeight: '600', marginBottom: '0.5rem', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.75rem' }}>Scientific Reference</p>
+          <p style={{ lineHeight: '1.5' }}>
+            Joseph, T.G., Curley, M. & Anand, A. <em>Operational Methodologies for Rolling Resistance Evaluation.</em> Geotech Geol Eng 35, 2935–2946 (2017).
+          </p>
+          <a href="https://doi.org/10.1007/s10706-017-0292-y" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline', display: 'inline-block', marginTop: '0.5rem' }}>
+            https://doi.org/10.1007/s10706-017-0292-y
+          </a>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default App;
