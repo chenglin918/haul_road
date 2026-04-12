@@ -1,9 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, Cell } from 'recharts';
 import { Settings, RefreshCw, BarChart3, Truck, Layers, Activity, BookOpen, Microscope, Calculator, Download } from 'lucide-react';
-import { BlockMath } from 'react-katex';
+import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import './index.css';
+
+function BlockMath({ math }) {
+  const html = useMemo(() => {
+    try {
+      return katex.renderToString(math, { displayMode: true, throwOnError: false });
+    } catch {
+      return math;
+    }
+  }, [math]);
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+}
 
 // Material Cap Rolling Resistance Data (from paper scale tests)
 const materialsData = [
