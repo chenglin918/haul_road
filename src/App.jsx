@@ -378,7 +378,7 @@ function App() {
                   <Tooltip 
                     contentStyle={{ backgroundColor: 'var(--bg-accent)', borderColor: 'var(--glass-border)', color: 'var(--text-primary)' }}
                   />
-                  <Area type="monotone" dataKey="rrBoussinesq" name="Paper Geometric Model" stroke="var(--primary)" fillOpacity={0.6} fill="url(#colorRR_B)" />
+                  <Area type="monotone" dataKey="rrBoussinesq" name="Dynamic Boussinesq Solution" stroke="var(--primary)" fillOpacity={0.6} fill="url(#colorRR_B)" />
                   <Area type="monotone" dataKey="rrLinear" name="Linear Model" stroke="var(--secondary)" fillOpacity={0.6} fill="url(#colorRR_L)" />
                 </AreaChart>
               </ResponsiveContainer>
@@ -414,7 +414,7 @@ function App() {
               />
               <EquationFrame
                 eyebrow="Method B"
-                title="Paper Geometric Model"
+                title="Dynamic Boussinesq Solution"
                 math={paperRollingResistanceEquation}
                 note="Key relation retained from the paper-based geometric implementation."
                 reference="Reference: Joseph, T.G., Curley, M. & Anand, A. (2017), Eq. (1), Geotech Geol Eng 35, 2935-2946."
@@ -512,7 +512,7 @@ function App() {
 
             <div className="theory-method-card theory-method-card-secondary" style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid var(--glass-border)', padding: '1rem', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
               <div className="theory-method-heading">
-                <strong style={{color:'var(--accent)', fontSize:'0.95rem'}}>Method B: Paper Geometric Model</strong>
+                <strong style={{color:'var(--accent)', fontSize:'0.95rem'}}>Method B: Dynamic Boussinesq Solution</strong>
                 <span className="theory-method-summary">Implemented from Joseph, Curley, and Anand (2017), using Eqs. 1, 3, 5, 6, and 8-11.</span>
               </div>
               <div className="equation-step-list">

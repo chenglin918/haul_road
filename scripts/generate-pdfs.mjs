@@ -408,7 +408,7 @@ function renderSampleCalculation(katexCss) {
           </article>
           <article class="card span-6">
             <div class="kicker">Method B</div>
-            <h2>Paper Geometric Model</h2>
+            <h2>Dynamic Boussinesq Solution</h2>
             <div class="card math-card green" style="box-shadow:none; margin-bottom:12px; padding:14px 14px 12px;">
               <div class="kicker">Key Equation</div>
               <h3>Paper Eq. (1)</h3>
