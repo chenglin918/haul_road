@@ -112,6 +112,8 @@ function App() {
     ? (reactionOffset / (R - deltaTireMeters)) * 100
     : 0;
 
+  // Demo-only trace shaping values: a dominant oscillation plus a smaller offset wave for smooth, repeatable variation.
+  // These coefficients are UI heuristics rather than paper-derived engineering inputs, so the core RR formulas remain separate.
   const primaryBounceAmplitude = tireLoad * 0.1;
   const secondaryBounceAmplitude = tireLoad * 0.025;
   const primaryBounceFrequency = 1.5;
