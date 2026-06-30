@@ -9,11 +9,11 @@ The UI exposes hauler and surface parameters, renders the governing equations wi
 
 ## Project structure
 
-- `/home/runner/work/haul_road/haul_road/src/App.jsx` - main simulator UI, equations, and chart data generation
-- `/home/runner/work/haul_road/haul_road/src/index.css` and `/home/runner/work/haul_road/haul_road/src/App.css` - styling
-- `/home/runner/work/haul_road/haul_road/sample_calculation.md` - worked example of the simulator math
-- `/home/runner/work/haul_road/haul_road/kp_determination_briefing.md` - field protocol background
-- `/home/runner/work/haul_road/haul_road/.github/workflows/deploy.yml` - GitHub Pages deployment workflow
+- `src/App.jsx` - main simulator UI, equations, and chart data generation
+- `src/index.css` and `src/App.css` - styling
+- `sample_calculation.md` - worked example of the simulator math
+- `kp_determination_briefing.md` - field protocol background
+- `.github/workflows/deploy.yml` - GitHub Pages deployment workflow
 
 ## Local development
 

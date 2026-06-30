@@ -112,13 +112,19 @@ function App() {
     ? (reactionOffset / (R - deltaTireMeters)) * 100
     : 0;
 
+  const primaryBounceAmplitude = tireLoad * 0.1;
+  const secondaryBounceAmplitude = tireLoad * 0.025;
+  const primaryBounceFrequency = 1.5;
+  const secondaryBounceFrequency = 0.75;
+  const secondaryBouncePhase = tireLoad / 120;
+
   // Generates dummy GPS trace data for the RR distribution chart
   const traceData = useMemo(() => {
     const data = [];
     for(let i=0; i<30; i++) {
-      // Add suspension bounce solely to F_i (Tire Load) using deterministic oscillation
-      const bounce = (Math.sin(i * 1.5) * (tireLoad * 0.1))
-        + (Math.sin((i * 0.75) + (tireLoad / 120)) * (tireLoad * 0.025));
+      // Blend a dominant bounce cycle with a smaller secondary oscillation for stable demo-only variation.
+      const bounce = (Math.sin(i * primaryBounceFrequency) * primaryBounceAmplitude)
+        + (Math.sin((i * secondaryBounceFrequency) + secondaryBouncePhase) * secondaryBounceAmplitude);
       const dynamicLoad = tireLoad + bounce;
       
       // Compute Method A: Linear dynamically
@@ -166,7 +172,18 @@ function App() {
       });
     }
     return data;
-  }, [R, groundStiffness, phi, tireLoad, tireStiffness]);
+  }, [
+    R,
+    groundStiffness,
+    phi,
+    primaryBounceAmplitude,
+    primaryBounceFrequency,
+    secondaryBounceAmplitude,
+    secondaryBounceFrequency,
+    secondaryBouncePhase,
+    tireLoad,
+    tireStiffness,
+  ]);
 
   const methodALinearEquation = 'RR\\% = 2.0 + \\left(\\delta_{ground} \\times 0.2\\right) + \\left(\\delta_{tire} \\times 0.05\\right)';
   const paperRollingResistanceEquation = 'RR\\% = 100\\left(\\frac{y}{\\left(\\frac{\\phi_{\\text{tire}}}{2} - \\delta_{\\text{tire}}\\right)}\\right)';
