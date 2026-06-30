@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, Cell } from 'recharts';
 import { Settings, RefreshCw, BarChart3, Truck, Layers, Activity, BookOpen, Microscope, Calculator, Download } from 'lucide-react';
 import katex from 'katex';
@@ -79,8 +79,6 @@ function App() {
   const footprintArea = 1.35 * deltaTireMeters * phi;
   const footprintLength = 2 * Math.sqrt(Math.max(0, (phi * deltaTireMeters) - (deltaTireMeters ** 2)));
   const tireWidth = footprintLength > 0 ? footprintArea / footprintLength : 0;
-  const footprintPressure = footprintArea > 0 ? tireLoad / footprintArea : 0; // kPa
-
   // Eq. (6): ground deformation using resilient pressure stiffness kp (kPa/mm)
   const deltaGroundMeters = footprintArea > 0 && groundStiffness > 0
     ? tireLoad / (footprintArea * groundStiffness * 1000)
@@ -115,13 +113,12 @@ function App() {
     : 0;
 
   // Generates dummy GPS trace data for the RR distribution chart
-  const [traceData, setTraceData] = useState([]);
-  
-  useEffect(() => {
+  const traceData = useMemo(() => {
     const data = [];
     for(let i=0; i<30; i++) {
-      // Add suspension bounce solely to F_i (Tire Load) (~1Hz frequency + random noise)
-      const bounce = Math.sin(i * 1.5) * (tireLoad * 0.1) + (Math.random() - 0.5) * (tireLoad * 0.05);
+      // Add suspension bounce solely to F_i (Tire Load) using deterministic oscillation
+      const bounce = (Math.sin(i * 1.5) * (tireLoad * 0.1))
+        + (Math.sin((i * 0.75) + (tireLoad / 120)) * (tireLoad * 0.025));
       const dynamicLoad = tireLoad + bounce;
       
       // Compute Method A: Linear dynamically
@@ -168,8 +165,8 @@ function App() {
         tireWidth: parseFloat(dynWidth.toFixed(3))
       });
     }
-    setTraceData(data);
-  }, [tireLoad, tireStiffness, groundStiffness]);
+    return data;
+  }, [R, groundStiffness, phi, tireLoad, tireStiffness]);
 
   const methodALinearEquation = 'RR\\% = 2.0 + \\left(\\delta_{ground} \\times 0.2\\right) + \\left(\\delta_{tire} \\times 0.05\\right)';
   const paperRollingResistanceEquation = 'RR\\% = 100\\left(\\frac{y}{\\left(\\frac{\\phi_{\\text{tire}}}{2} - \\delta_{\\text{tire}}\\right)}\\right)';
